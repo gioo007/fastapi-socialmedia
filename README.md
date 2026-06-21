@@ -82,7 +82,7 @@ app/
 
 ```bash
 # Clone the repo
-git clone https://github.com/gioo007/posts-api.git
+git clone https://github.com/gioo007/fastapi-socialmedia.git
 cd posts-api
 
 # Create and activate virtual environment
