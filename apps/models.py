@@ -1,5 +1,6 @@
 #models are just db tables
 from sqlalchemy import TIME, TIMESTAMP, Column, Integer, String, Boolean, ForeignKey, text
+from sqlalchemy.orm import relationship
 from .db import Base
 
 
@@ -11,6 +12,7 @@ class Post(Base):
     published = Column(Boolean, server_default='False', nullable=False)
     date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    owner = relationship("User")
 
 class User(Base):
     __tablename__ = "users"
