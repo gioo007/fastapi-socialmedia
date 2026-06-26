@@ -13,6 +13,7 @@ class PostCreate(PostBase):
 class PostResponse(PostBase):
     id: int
     date: datetime
+    owner_id: int
     class Config:
         from_attributes = True #new way for orm_mode = true
         #tells pydantic to read data from the our ORM (sqlalchemy) models and not just dicts, allows us to return sqlalchemy models directly and pydantic will know how to read them and convert them to the response model

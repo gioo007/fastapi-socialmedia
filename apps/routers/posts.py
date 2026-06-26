@@ -28,7 +28,7 @@ def create_post(post: schemas.PostCreate,db: Session = Depends(get_db), current_
     if current_user is not None:
         print(current_user.id, current_user.first_name)
 
-    new_post = models.Post(**post.model_dump()) #unpacks dictionary
+    new_post = models.Post(owner_id=current_user.id, **post.model_dump()) #unpacks dictionary
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -40,6 +40,10 @@ def update_post(updated_post: schemas.PostCreate, id: int, db: Session = Depends
     post = postquery.first()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
+    
+    if bool(post.owner_id != current_user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
+
     postquery.update(updated_post.model_dump(), synchronize_session=False) #type: ignore
     db.commit()
     db.refresh(post)
@@ -50,6 +54,10 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: models.Use
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
+    
+    if bool(post.owner_id != current_user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
+    
     db.delete(post)
     db.commit()
     return {"message": f"post with id {id} deleted successfully"}

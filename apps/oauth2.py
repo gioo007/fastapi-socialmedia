@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 SECRET_KEY = "you could basically put any string in here, but they usually use some secure random hexadecimal one"
 ALGORITHM = "HS256" #hashing algorithm used for encoding and decoding the jwt token
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 #expiration time for the jwt token in minutes (so user is not logged in forever in this case)
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 #expiration time for the jwt token in minutes (so user is not logged in forever in this case)
 
 oatuh2_scheme = OAuth2PasswordBearer(tokenUrl= '/login')
 
