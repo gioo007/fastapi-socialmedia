@@ -2,21 +2,6 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
 
-class PostBase(BaseModel): #extends BaseModel from pydantic
-    title: str
-    content: str
-    published: bool = False
-
-class PostCreate(PostBase):
-    pass
-
-class PostResponse(PostBase):
-    id: int
-    date: datetime
-    class Config:
-        from_attributes = True #new way for orm_mode = true
-        #tells pydantic to read data from the our ORM (sqlalchemy) models and not just dicts, allows us to return sqlalchemy models directly and pydantic will know how to read them and convert them to the response model
-
 class UserCreate(BaseModel):
     first_name: str
     last_name: str
@@ -36,6 +21,25 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class PostBase(BaseModel): #extends BaseModel from pydantic
+    title: str
+    content: str
+    published: bool = False
+
+class PostCreate(PostBase):
+    pass
+
+class PostResponse(PostBase):
+    id: int
+    date: datetime
+    owner_id: int
+    owner: UserResponse
+
+    class Config:
+        from_attributes = True #new way for orm_mode = true
+        #tells pydantic to read data from the our ORM (sqlalchemy) models and not just dicts, allows us to return sqlalchemy models directly and pydantic will know how to read them and convert them to the response model
 
 class Token(BaseModel):
     access_token: str

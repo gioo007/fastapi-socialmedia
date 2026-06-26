@@ -1,3 +1,5 @@
+#REST API: Representational State Transfer - Application Programming Interface
+
 # Environment
 .env
 
@@ -28,3 +30,6 @@ Thumbs.db
 .pytest_cache/
 htmlcov/
 .coverage
+
+#sql queries
+*.sql
