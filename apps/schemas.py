@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 class UserCreate(BaseModel):
     first_name: str
@@ -47,3 +47,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+class Vote(BaseModel):
+    post_id: int
+    direction: Annotated[int, Field(ge=-1, le=1)] #direction is either +1 or -1 (add/remove vote)
