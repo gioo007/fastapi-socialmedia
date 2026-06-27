@@ -41,7 +41,11 @@ class PostResponse(PostBase):
         from_attributes = True #new way for orm_mode = true
         #tells pydantic to read data from the our ORM (sqlalchemy) models and not just dicts, allows us to return sqlalchemy models directly and pydantic will know how to read them and convert them to the response model
 
-class Token(BaseModel):
+class PostOut(BaseModel):
+    Post: PostResponse
+    votes: int
+
+class Token(BaseModel): 
     access_token: str
     token_type: str
 
