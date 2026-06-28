@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 class UserCreate(BaseModel):
     first_name: str
@@ -41,9 +41,17 @@ class PostResponse(PostBase):
         from_attributes = True #new way for orm_mode = true
         #tells pydantic to read data from the our ORM (sqlalchemy) models and not just dicts, allows us to return sqlalchemy models directly and pydantic will know how to read them and convert them to the response model
 
-class Token(BaseModel):
+class PostOut(BaseModel):
+    Post: PostResponse
+    votes: int
+
+class Token(BaseModel): 
     access_token: str
     token_type: str
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+class Vote(BaseModel):
+    post_id: int
+    direction: Annotated[int, Field(ge=-1, le=1)] #direction is either +1 or -1 (add/remove vote)
