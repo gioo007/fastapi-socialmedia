@@ -1,6 +1,6 @@
 # Posts API
 
-A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authentication, JWT-based authorization, and full CRUD functionality for posts.
+A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authentication, JWT-based authorization, full CRUD for posts, a votes system, and database migrations via Alembic.
 
 ---
 
@@ -11,9 +11,11 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 | Framework | FastAPI |
 | Database | PostgreSQL |
 | ORM | SQLAlchemy |
+| Migrations | Alembic |
 | Validation | Pydantic v2 |
 | Auth | JWT (OAuth2 Password Flow) |
 | Password Hashing | bcrypt (via passlib) |
+| Config | pydantic-settings (.env) |
 
 ---
 
@@ -22,27 +24,42 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 - **User registration & login** with hashed passwords
 - **JWT authentication** with token expiry and protected routes
 - **Post management** — create, read, update, and delete posts
-- **Ownership enforcement** — users can only modify their own posts
+- **Ownership enforcement** — users can only modify or delete their own posts
+- **Votes system** — users can vote or unvote on posts (one vote per user per post)
+- **Aggregated responses** — post queries return vote counts via SQL joins
+- **Query parameters** — filter and limit post results
 - **Schema validation** via Pydantic models with clean separation from ORM models
+- **Environment-based config** via pydantic-settings and `.env`
+- **Database migrations** managed with Alembic
 - **Auto-generated API docs** at `/docs` (Swagger UI) and `/redoc`
-- **Modular router structure** — auth and posts split into separate routers
+- **Modular router structure** — auth, posts, users, and votes in separate routers
 
 ---
 
 ## Project Structure
 
 ```
-app/
-├── main.py           # App entry point, router registration
-├── database.py       # SQLAlchemy engine and session setup
-├── models.py         # ORM models (User, Post)
-├── schemas.py        # Pydantic request/response models
-├── oauth2.py         # JWT token creation and verification
-├── utils.py          # Password hashing utilities
-└── routers/
-    ├── auth.py       # Login endpoint
-    ├── posts.py      # Post CRUD endpoints
-    └── users.py      # User registration and lookup
+├── alembic/                  # Database migrations
+│   ├── versions/             # Migration scripts
+│   └── env.py
+├── apps/
+│   ├── routers/
+│   │   ├── auth.py           # Login endpoint
+│   │   ├── posts.py          # Post CRUD endpoints
+│   │   ├── users.py          # User registration and lookup
+│   │   └── vote.py           # Vote endpoint
+│   ├── config.py             # pydantic-settings environment config
+│   ├── database.py           # SQLAlchemy engine and session setup
+│   ├── main.py               # App entry point, router registration
+│   ├── models.py             # ORM models (User, Post, Vote)
+│   ├── oauth2.py             # JWT token creation and verification
+│   ├── schemas.py            # Pydantic request/response models
+│   └── utils.py              # Password hashing utilities
+├── .env.example
+├── .gitignore
+├── alembic.ini
+├── requirements.txt
+└── README.md
 ```
 
 ---
@@ -63,11 +80,16 @@ app/
 ### Posts
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/posts` | Get all posts |
+| GET | `/posts` | Get all posts with vote counts |
 | POST | `/posts` | Create a new post (auth required) |
-| GET | `/posts/{id}` | Get post by ID |
+| GET | `/posts/{id}` | Get post by ID with vote count |
 | PUT | `/posts/{id}` | Update a post (owner only) |
 | DELETE | `/posts/{id}` | Delete a post (owner only) |
+
+### Votes
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/vote` | Vote or unvote on a post (auth required) |
 
 ---
 
@@ -83,7 +105,7 @@ app/
 ```bash
 # Clone the repo
 git clone https://github.com/gioo007/fastapi-socialmedia.git
-cd posts-api
+cd fastapi-socialmedia
 
 # Create and activate virtual environment
 python -m venv venv
@@ -108,10 +130,16 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
+### Run Migrations
+
+```bash
+alembic upgrade head
+```
+
 ### Run the Server
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn apps.main:app --reload
 ```
 
 API docs available at: `http://127.0.0.1:8000/docs`
@@ -120,8 +148,5 @@ API docs available at: `http://127.0.0.1:8000/docs`
 
 ## Planned Additions
 
-- Votes/likes on posts
-- SQL joins for aggregated post data
-- Alembic database migrations
 - pytest test suite
 - Docker support

@@ -12,7 +12,7 @@ class Post(Base):
     published = Column(Boolean, server_default='False', nullable=False)
     date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    owner = relationship("User")
+    owner = relationship("User") #basically a join between the two tables, so we can access the user from the post eg. post.owner.first_name
 
 class User(Base):
     __tablename__ = "users"
