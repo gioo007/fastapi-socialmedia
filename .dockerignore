@@ -1,0 +1,41 @@
+# --- Git ---
+.git
+.gitignore
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- Docker itself ---
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# --- IDE / editor ---
+.vscode/
+.idea/
+*.swp
+
+# --- CI/CD (not needed inside the image) ---
+.github/
+
+# --- Logs / local DB data if any ---
+pgdata/
