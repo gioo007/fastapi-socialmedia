@@ -4,5 +4,22 @@ services:               #service is basically a container
     ports:
       #- <port on localhost (outside port)>:<port on container (inside port)>
       - "8000:8000"  #mapping port 8000 of container to port 8000 of localhost
+    volumes:
+      - ./:/app #mounting the app folder to container
     env_file:
       - ./.env  #path of env file to load environment variables
+    depends_on:
+      - postgres
+    command: uvicorn apps.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+  
+  postgres:
+    image: postgres:16
+    env_file:
+    - ./.env
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
