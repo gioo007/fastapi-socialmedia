@@ -1,6 +1,6 @@
 services:               #service is basically a container
   fastapi:                  #container 1 named "fastapi"  
-    build: .            #path of dockerfile to build the image
+    image: giodocks/fastapi
     ports:
       #- <port on localhost (outside port)>:<port on container (inside port)>
       - "8000:8000"  #mapping port 8000 of container to port 8000 of localhost
