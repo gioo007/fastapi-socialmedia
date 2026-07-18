@@ -34,8 +34,24 @@ docker-compose.yml
 .idea/
 *.swp
 
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Docs / misc (not needed inside the image) ---
+README.md
+*.md
+docs/
+
 # --- CI/CD (not needed inside the image) ---
 .github/
 
 # --- Logs / local DB data if any ---
+*.log
 pgdata/
+
+# --- Local SQL dumps / test data ---
+*.sql
+
+# --- Docs (not needed at runtime) ---
+README.md
