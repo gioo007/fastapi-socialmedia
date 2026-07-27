@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from datetime import datetime
 from typing import Annotated, Optional
 
@@ -15,8 +15,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -37,13 +36,14 @@ class PostResponse(PostBase):
     owner_id: int
     owner: UserResponse
 
-    class Config:
-        from_attributes = True #new way for orm_mode = true
+    model_config = ConfigDict(from_attributes=True) #new way for orm_mode = true
         #tells pydantic to read data from the our ORM (sqlalchemy) models and not just dicts, allows us to return sqlalchemy models directly and pydantic will know how to read them and convert them to the response model
 
 class PostOut(BaseModel):
     Post: PostResponse
     votes: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel): 
     access_token: str

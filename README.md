@@ -17,6 +17,7 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 | Password Hashing | bcrypt (via passlib) |
 | Config | pydantic-settings (.env) |
 | Containerization | Docker, Docker Compose |
+| Testing | pytest, FastAPI TestClient |
 
 ---
 
@@ -37,6 +38,7 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 - **Containerized with Docker** — API and PostgreSQL run as isolated services via Docker Compose
 - **Dynamic port binding** — reads `$PORT` at runtime for deployment platforms (Railway/Render), with a local fallback for development
 - **Pre-built image on Docker Hub** — pull and run without cloning or installing dependencies locally
+- **Automated test suite** — pytest tests covering users, posts, and votes with isolated test database
 
 ---
 
@@ -54,17 +56,22 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 │   │   └── vote.py           # Vote endpoint
 │   ├── config.py             # pydantic-settings environment config
 │   ├── database.py           # SQLAlchemy engine and session setup
-│   ├── main.py                # App entry point, router registration
-│   ├── models.py              # ORM models (User, Post, Vote)
-│   ├── oauth2.py               # JWT token creation and verification
-│   ├── schemas.py              # Pydantic request/response models
-│   └── utils.py                # Password hashing utilities
+│   ├── main.py               # App entry point, router registration
+│   ├── models.py             # ORM models (User, Post, Vote)
+│   ├── oauth2.py             # JWT token creation and verification
+│   ├── schemas.py            # Pydantic request/response models
+│   └── utils.py              # Password hashing utilities
+├── tests/
+│   ├── conftest.py           # Shared fixtures (client, session, test_user, authorized_client)
+│   ├── test_users.py         # User registration and login tests
+│   ├── test_posts.py         # Post CRUD and authorization tests
+│   └── test_votes.py         # Vote creation and deletion tests
 ├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── alembic.ini
-├── docker-compose.yml         # Local multi-container orchestration (api + db)
-├── Dockerfile                 # API image build instructions
+├── docker-compose.yml        # Local multi-container orchestration (api + db)
+├── Dockerfile                # API image build instructions
 ├── requirements.txt
 └── README.md
 ```
@@ -192,6 +199,32 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 ---
 
+## Testing
+
+Tests use a dedicated PostgreSQL database (`your_db_test`) that is created, populated, and torn down automatically per test via pytest fixtures. No manual setup is needed beyond creating the empty test database once.
+
+```bash
+# Create the test database once (via psql or pgAdmin)
+CREATE DATABASE your_db_test;
+
+# Run all tests
+pytest
+
+# Run with output
+pytest -v -s
+```
+
+The test suite covers:
+
+- User registration and login (including invalid credentials)
+- JWT token generation and validation
+- Post CRUD — create, read, update, delete
+- Ownership enforcement — users cannot modify or delete other users' posts
+- Authorization checks — all protected routes return 401 for unauthenticated requests
+- Votes — adding, removing, duplicate vote prevention, and non-existent post handling
+
+---
+
 ## Deployment
 
 The API reads its listening port from the `$PORT` environment variable at runtime (with a local fallback of `8000`), making it compatible out of the box with PaaS platforms like **Railway** and **Render**, which build directly from the included `Dockerfile` and inject their own port and database configuration.
@@ -200,6 +233,5 @@ The API reads its listening port from the `$PORT` environment variable at runtim
 
 ## Planned Additions
 
-- pytest test suite
 - CI/CD pipeline via GitHub Actions
 - Deployment to Railway/Render
