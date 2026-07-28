@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from .config import settings
 
-sqlalchemy_database_url = f"postgresql://{settings.postgres_user}:{settings.postgres_password}@{settings.database_hostname}/{settings.postgres_db}"
+sqlalchemy_database_url = f"postgresql://{settings.postgres_user}:{settings.postgres_password}@{settings.database_hostname}/{settings.postgres_db}?sslmode=prefer"
 engine = create_engine(sqlalchemy_database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
