@@ -20,7 +20,7 @@ app.include_router(vote.router)
 
 @app.get("/")
 def root():
-    return {"message": "I love you holly❤️"}
+    return {"message": "Hi I'm Gio and this is my FastAPI app. Welcome!"}
 
 #http://127.0.0.1:8000/docs for swaggerUi documentation
 #http://127.0.0.1:8000/redoc for redoc documentation
