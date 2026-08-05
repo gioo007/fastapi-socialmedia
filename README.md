@@ -2,6 +2,8 @@
 
 A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authentication, JWT-based authorization, full CRUD for posts, a votes system, and database migrations via Alembic. Fully containerized with Docker and Docker Compose, with a pre-built image published on Docker Hub.
 
+**Live:** https://fastapi-socialmedia-uevd.onrender.com/docs
+
 ---
 
 ## Tech Stack
@@ -9,7 +11,7 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 | Layer | Technology |
 |---|---|
 | Framework | FastAPI |
-| Database | PostgreSQL |
+| Database | PostgreSQL (Neon) |
 | ORM | SQLAlchemy |
 | Migrations | Alembic |
 | Validation | Pydantic v2 |
@@ -18,6 +20,8 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 | Config | pydantic-settings (.env) |
 | Containerization | Docker, Docker Compose |
 | Testing | pytest, FastAPI TestClient |
+| CI/CD | GitHub Actions |
+| Deployment | Render |
 
 ---
 
@@ -36,9 +40,10 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 - **Auto-generated API docs** at `/docs` (Swagger UI) and `/redoc`
 - **Modular router structure** — auth, posts, users, and votes in separate routers
 - **Containerized with Docker** — API and PostgreSQL run as isolated services via Docker Compose
-- **Dynamic port binding** — reads `$PORT` at runtime for deployment platforms (Railway/Render), with a local fallback for development
+- **Dynamic port binding** — reads `$PORT` at runtime for Render compatibility
 - **Pre-built image on Docker Hub** — pull and run without cloning or installing dependencies locally
 - **Automated test suite** — pytest tests covering users, posts, and votes with isolated test database
+- **CI/CD pipeline** — tests gate every deployment via GitHub Actions
 
 ---
 
@@ -55,7 +60,7 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 │   │   ├── users.py          # User registration and lookup
 │   │   └── vote.py           # Vote endpoint
 │   ├── config.py             # pydantic-settings environment config
-│   ├── database.py           # SQLAlchemy engine and session setup
+│   ├── db.py                 # SQLAlchemy engine and session setup
 │   ├── main.py               # App entry point, router registration
 │   ├── models.py             # ORM models (User, Post, Vote)
 │   ├── oauth2.py             # JWT token creation and verification
@@ -66,6 +71,10 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 │   ├── test_users.py         # User registration and login tests
 │   ├── test_posts.py         # Post CRUD and authorization tests
 │   └── test_votes.py         # Vote creation and deletion tests
+├── .github/
+│   └── workflows/
+│       ├── test.yml          # Runs pytest on push/PR to DEV
+│       └── deploy.yml        # Runs pytest then deploys to Render on merge to main
 ├── .dockerignore
 ├── .env.example
 ├── .gitignore
@@ -107,27 +116,41 @@ A RESTful API built with **FastAPI** and **PostgreSQL**, featuring user authenti
 
 ---
 
+## CI/CD Pipeline
+
+Two GitHub Actions workflows:
+
+**`test.yml`** — triggers on every push or PR to `DEV`
+- Spins up a PostgreSQL 16 service container
+- Runs the full pytest suite against an isolated test database
+- Uses the `testing` GitHub environment for secrets
+
+**`deploy.yml`** — triggers on merge to `main`
+- Runs the full pytest suite first (same as above)
+- Only if tests pass, triggers a Render deploy via deploy hook
+- Uses `testing` environment for the test job and `production` environment for the deploy job
+
+---
+
 ## Getting Started
 
-You can run this project either with **Docker Compose** (recommended — no local Python/PostgreSQL setup needed) or manually with a local virtual environment.
+You can run this project either with **Docker Compose** (recommended) or manually.
 
 ### Option 1: Docker Compose (recommended)
 
 **Prerequisites:** Docker Desktop
 
 ```bash
-# Clone the repo
 git clone https://github.com/gioo007/fastapi-socialmedia.git
 cd fastapi-socialmedia
 
-# Create your .env file (see Environment Variables section below)
 cp .env.example .env
+# fill in your values
 
-# Build and start the API + PostgreSQL containers
 docker compose up --build
 ```
 
-Migrations run inside the running API container:
+Run migrations inside the container:
 
 ```bash
 docker compose exec fastapi alembic upgrade head
@@ -135,42 +158,25 @@ docker compose exec fastapi alembic upgrade head
 
 API docs available at: `http://localhost:8000/docs`
 
-### Option 2: Pull the pre-built image from Docker Hub
+### Option 2: Pull from Docker Hub
 
 ```bash
 docker pull giodocks/fastapi:latest
 ```
 
-Run alongside your own PostgreSQL instance (see Environment Variables below for required config), or use the `docker-compose.yml` in this repo as a reference for wiring it up with a database container.
+### Option 3: Manual setup
 
-### Option 3: Manual setup (no Docker)
-
-**Prerequisites:**
-- Python 3.10+
-- PostgreSQL
+**Prerequisites:** Python 3.10+, PostgreSQL
 
 ```bash
-# Clone the repo
 git clone https://github.com/gioo007/fastapi-socialmedia.git
 cd fastapi-socialmedia
 
-# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install dependencies
 pip install -r requirements.txt
-```
-
-Run migrations:
-
-```bash
 alembic upgrade head
-```
-
-Run the server:
-
-```bash
 uvicorn apps.main:app --reload
 ```
 
@@ -186,25 +192,21 @@ Create a `.env` file in the root directory (see `.env.example`):
 POSTGRES_USER=your_user
 POSTGRES_PASSWORD=your_password
 POSTGRES_DB=your_db
-
-DATABASE_HOSTNAME=postgres      # use "postgres" for Docker Compose, "localhost" for manual setup
+DATABASE_HOSTNAME=localhost    # use service name "postgres" inside Docker Compose
 DATABASE_PORT=5432
-
 SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-> **Note:** `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` are used both by the official PostgreSQL image to initialize the database, and by the API to build its database connection string — keeping a single source of truth with no duplicated values.
-
 ---
 
 ## Testing
 
-Tests use a dedicated PostgreSQL database (`your_db_test`) that is created, populated, and torn down automatically per test via pytest fixtures. No manual setup is needed beyond creating the empty test database once.
+Tests use a dedicated database (`your_db_test`) that is created and torn down automatically per test via pytest fixtures.
 
 ```bash
-# Create the test database once (via psql or pgAdmin)
+# Create the test database once
 CREATE DATABASE your_db_test;
 
 # Run all tests
@@ -227,11 +229,8 @@ The test suite covers:
 
 ## Deployment
 
-The API reads its listening port from the `$PORT` environment variable at runtime (with a local fallback of `8000`), making it compatible out of the box with PaaS platforms like **Railway** and **Render**, which build directly from the included `Dockerfile` and inject their own port and database configuration.
+Deployed on **Render** with the database hosted on **Neon** (managed PostgreSQL).
 
----
+The API reads `$PORT` from the environment at runtime, making it compatible with Render out of the box. Alembic migrations run automatically on every container startup before the server initializes.
 
-## Planned Additions
-
-- CI/CD pipeline via GitHub Actions
-- Deployment to Railway/Render
+Live: https://fastapi-socialmedia-uevd.onrender.com/docs
