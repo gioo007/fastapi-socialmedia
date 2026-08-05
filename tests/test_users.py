@@ -6,7 +6,7 @@ from apps import schemas
 
 def test_root(client):
     response = client.get("/")
-    assert response.json().get("message") == "Hello World"
+    assert response.json().get("message") == "I love you holly❤️"
     assert response.status_code == 200
 
 def test_create_user(client):
