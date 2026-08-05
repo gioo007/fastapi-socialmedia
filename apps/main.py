@@ -20,7 +20,7 @@ app.include_router(vote.router)
 
 @app.get("/")
 def root():
-    return {"message": "Hello World"}
+    return {"message": "I love you holly❤️"}
 
 #http://127.0.0.1:8000/docs for swaggerUi documentation
 #http://127.0.0.1:8000/redoc for redoc documentation
