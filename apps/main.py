@@ -22,5 +22,9 @@ app.include_router(vote.router)
 def root():
     return {"message": "Hi I'm Gio and this is my FastAPI app. Welcome!"}
 
+@app.api_route("/health", methods=["GET", "HEAD"], tags=["Health"])
+def health_check():
+    return {"status": "ok"}
+
 #http://127.0.0.1:8000/docs for swaggerUi documentation
 #http://127.0.0.1:8000/redoc for redoc documentation
