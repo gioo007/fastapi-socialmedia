@@ -15,6 +15,11 @@ def test_create_user(client):
     assert new_user.email == "test@example.com"
     assert response.status_code == 201
 
+def test_create_user_existing_email(client, test_user):
+    response = client.post("/users/", json={"first_name": "Test", "last_name": "User", "email": test_user["email"], "password": "password123"})
+    assert response.status_code == 409
+    assert response.json().get("detail") == f"User with this email already exists"
+
 def test_login(client, test_user): #note that test_user already depends on client, but its there for clarity
     response = client.post("/login", data={"username": test_user["email"], "password": test_user["password"]})
     login_response = schemas.Token(**response.json())
