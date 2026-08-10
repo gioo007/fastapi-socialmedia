@@ -33,3 +33,7 @@ htmlcov/
 
 #sql queries
 *.sql
+
+# Files
+*.docx
+*.pdf
